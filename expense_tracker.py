@@ -8,8 +8,10 @@ from datetime import date, datetime
 DATA_FILE = "expenses.json"
 BUDGET_FILE = "budget.json"
 
-# Share of the monthly budget at which the user is alerted.
-ALERT_THRESHOLD = 0.75
+# Shares of the monthly budget at which the user is alerted.
+# Merge resolution: keep both ideas as two alert levels.
+WARNING_THRESHOLD = 0.75   # from feature/early-warning
+CRITICAL_THRESHOLD = 0.90  # from feature/critical-alert
 
 
 def load_expenses(path=DATA_FILE):
@@ -107,7 +109,9 @@ def budget_alert(spent, budget):
     ratio = spent / budget
     if ratio >= 1:
         return f"OVER BUDGET: spent {spent:.2f} of {budget:.2f} ({ratio:.0%})."
-    if ratio >= ALERT_THRESHOLD:
+    if ratio >= CRITICAL_THRESHOLD:
+        return f"CRITICAL: you have used {ratio:.0%} of your budget. Only {budget - spent:.2f} left."
+    if ratio >= WARNING_THRESHOLD:
         return f"WARNING: you have used {ratio:.0%} of your budget. Consider slowing down."
     return None
 

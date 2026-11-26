@@ -32,6 +32,12 @@ class ExpenseTrackerTests(unittest.TestCase):
     def test_no_alert_below_threshold(self):
         self.assertIsNone(et.budget_alert(500, 1000))
 
+    def test_warning_level_at_75_percent(self):
+        self.assertIn("WARNING", et.budget_alert(780, 1000))
+
+    def test_critical_level_at_90_percent(self):
+        self.assertIn("CRITICAL", et.budget_alert(920, 1000))
+
     def test_over_budget_alert(self):
         self.assertIn("OVER BUDGET", et.budget_alert(1200, 1000))
 
