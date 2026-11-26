@@ -59,6 +59,31 @@ def format_table(expenses):
     return "\n".join(lines)
 
 
+def filter_by_month(expenses, month=None):
+    """Keep only expenses in the given month (YYYY-MM); all if month is None."""
+    if not month:
+        return list(expenses)
+    return [e for e in expenses if e["date"].startswith(month)]
+
+
+def category_totals(expenses):
+    totals = {}
+    for e in expenses:
+        totals[e["category"]] = round(totals.get(e["category"], 0) + e["amount"], 2)
+    return dict(sorted(totals.items(), key=lambda kv: kv[1], reverse=True))
+
+
+def format_summary(expenses, month=None):
+    selected = filter_by_month(expenses, month)
+    title = f"Summary for {month}" if month else "Summary (all time)"
+    lines = [title, "-" * 30]
+    for category, total in category_totals(selected).items():
+        lines.append(f"{category:<16}{total:>12.2f}")
+    lines.append("-" * 30)
+    lines.append(f"{'TOTAL':<16}{sum(e['amount'] for e in selected):>12.2f}")
+    return "\n".join(lines)
+
+
 def build_parser():
     parser = argparse.ArgumentParser(description="Track your daily expenses.")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -70,6 +95,9 @@ def build_parser():
     add.add_argument("--note", default="")
 
     sub.add_parser("list", help="List all expenses")
+
+    summary = sub.add_parser("summary", help="Show totals by category")
+    summary.add_argument("--month", default=None, help="YYYY-MM (default: all time)")
     return parser
 
 
@@ -87,6 +115,8 @@ def main(argv=None):
         print(f"Added {e['amount']:.2f} to '{e['category']}' on {e['date']}.")
     elif args.command == "list":
         print(format_table(expenses))
+    elif args.command == "summary":
+        print(format_summary(expenses, args.month))
     return 0
 
 
