@@ -6,6 +6,10 @@ import os
 from datetime import date, datetime
 
 DATA_FILE = "expenses.json"
+BUDGET_FILE = "budget.json"
+
+# Share of the monthly budget at which the user is alerted.
+ALERT_THRESHOLD = 0.80
 
 
 def load_expenses(path=DATA_FILE):
@@ -84,6 +88,42 @@ def format_summary(expenses, month=None):
     return "\n".join(lines)
 
 
+def load_budget(path=BUDGET_FILE):
+    if not os.path.exists(path):
+        return 0.0
+    with open(path, "r", encoding="utf-8") as f:
+        return float(json.load(f).get("monthly_budget", 0))
+
+
+def save_budget(amount, path=BUDGET_FILE):
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump({"monthly_budget": validate_amount(amount)}, f, indent=2)
+
+
+def budget_alert(spent, budget):
+    """Return an alert message when spending nears or passes the budget."""
+    if budget <= 0:
+        return None
+    ratio = spent / budget
+    if ratio >= 1:
+        return f"OVER BUDGET: spent {spent:.2f} of {budget:.2f} ({ratio:.0%})."
+    if ratio >= ALERT_THRESHOLD:
+        return f"ALERT: you have used {ratio:.0%} of your monthly budget."
+    return None
+
+
+def budget_report(expenses, budget, month):
+    spent = sum(e["amount"] for e in filter_by_month(expenses, month))
+    lines = [
+        f"Budget for {month}: {budget:.2f}",
+        f"Spent: {spent:.2f}   Remaining: {budget - spent:.2f}",
+    ]
+    alert = budget_alert(spent, budget)
+    if alert:
+        lines.append(alert)
+    return "\n".join(lines)
+
+
 def build_parser():
     parser = argparse.ArgumentParser(description="Track your daily expenses.")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -98,6 +138,10 @@ def build_parser():
 
     summary = sub.add_parser("summary", help="Show totals by category")
     summary.add_argument("--month", default=None, help="YYYY-MM (default: all time)")
+
+    budget = sub.add_parser("budget", help="Set or check the monthly budget")
+    budget.add_argument("--set", dest="amount", default=None, help="New monthly budget")
+    budget.add_argument("--month", default=date.today().strftime("%Y-%m"), help="YYYY-MM")
     return parser
 
 
@@ -117,6 +161,16 @@ def main(argv=None):
         print(format_table(expenses))
     elif args.command == "summary":
         print(format_summary(expenses, args.month))
+    elif args.command == "budget":
+        if args.amount is not None:
+            try:
+                save_budget(args.amount)
+            except ValueError as err:
+                print(f"Error: {err}")
+                return 1
+            print(f"Monthly budget set to {load_budget():.2f}.")
+        else:
+            print(budget_report(expenses, load_budget(), args.month))
     return 0
 
 
