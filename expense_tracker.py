@@ -9,7 +9,7 @@ DATA_FILE = "expenses.json"
 BUDGET_FILE = "budget.json"
 
 # Share of the monthly budget at which the user is alerted.
-ALERT_THRESHOLD = 0.80
+ALERT_THRESHOLD = 0.75
 
 
 def load_expenses(path=DATA_FILE):
@@ -108,7 +108,7 @@ def budget_alert(spent, budget):
     if ratio >= 1:
         return f"OVER BUDGET: spent {spent:.2f} of {budget:.2f} ({ratio:.0%})."
     if ratio >= ALERT_THRESHOLD:
-        return f"ALERT: you have used {ratio:.0%} of your monthly budget."
+        return f"WARNING: you have used {ratio:.0%} of your budget. Consider slowing down."
     return None
 
 
