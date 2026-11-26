@@ -1,0 +1,51 @@
+$ python expense_tracker.py add 50 travel --date 2026-11-24 --note Cab
+Added 50.00 to 'travel' on 2026-11-24.
+
+$ python expense_tracker.py budget --month 2026-11
+Budget for 2026-11: 1800.00
+Spent: 1640.00   Remaining: 160.00
+CRITICAL: you have used 91% of your budget. Only 160.00 left.
+
+
+$ gh repo create expense-tracker --public --description CLI expense tracker built to practise Git branching, merging and conflict resolution
+https://github.com/hharshitarajoria/expense-tracker
+
+$ git remote add origin https://github.com/hharshitarajoria/expense-tracker.git
+
+$ git remote -v
+origin	https://github.com/hharshitarajoria/expense-tracker.git (fetch)
+origin	https://github.com/hharshitarajoria/expense-tracker.git (push)
+
+$ git push -u origin main
+To https://github.com/hharshitarajoria/expense-tracker.git
+ * [new branch]      main -> main
+branch 'main' set up to track 'origin/main'.
+
+$ git push origin feature/add-list feature/summary feature/budget-alert feature/early-warning feature/critical-alert
+To https://github.com/hharshitarajoria/expense-tracker.git
+ * [new branch]      feature/add-list -> feature/add-list
+ * [new branch]      feature/summary -> feature/summary
+ * [new branch]      feature/budget-alert -> feature/budget-alert
+ * [new branch]      feature/early-warning -> feature/early-warning
+ * [new branch]      feature/critical-alert -> feature/critical-alert
+
+$ git status
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
+
+$ git branch -a
+  feature/add-list
+  feature/budget-alert
+  feature/critical-alert
+  feature/early-warning
+  feature/summary
+* main
+  remotes/origin/feature/add-list
+  remotes/origin/feature/budget-alert
+  remotes/origin/feature/critical-alert
+  remotes/origin/feature/early-warning
+  remotes/origin/feature/summary
+  remotes/origin/main
+

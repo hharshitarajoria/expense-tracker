@@ -1,0 +1,143 @@
+$ git checkout -b feature/add-list
+Switched to a new branch 'feature/add-list'
+
+$ python expense_tracker.py add 250 food --date 2026-11-20 --note Lunch
+Added 250.00 to 'food' on 2026-11-20.
+
+$ python expense_tracker.py add abc food
+Error: 'abc' is not a valid amount.
+
+$ python expense_tracker.py add -5 travel
+Error: Amount must be greater than zero.
+
+$ python expense_tracker.py list
+#   Date        Category          Amount  Note
+----------------------------------------------------
+1   2026-11-20  food              250.00  Lunch
+
+$ git add expense_tracker.py
+
+$ git commit -m Add and list expenses with input validation
+[feature/add-list 121ae67] Add and list expenses with input validation
+ 1 file changed, 94 insertions(+)
+ create mode 100644 expense_tracker.py
+
+$ git checkout main
+Switched to branch 'main'
+
+$ git merge --no-ff feature/add-list -m Merge branch 'feature/add-list'
+Merge made by the 'ort' strategy.
+ expense_tracker.py | 94 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 94 insertions(+)
+ create mode 100644 expense_tracker.py
+
+$ git checkout -b feature/summary
+Switched to a new branch 'feature/summary'
+
+$ python expense_tracker.py add 1200 rent --date 2026-11-01 --note Hostel
+Added 1200.00 to 'rent' on 2026-11-01.
+
+$ python expense_tracker.py add 90 travel --date 2026-11-21 --note Metro
+Added 90.00 to 'travel' on 2026-11-21.
+
+$ python expense_tracker.py add 400 food --date 2026-10-30 --note Groceries
+Added 400.00 to 'food' on 2026-10-30.
+
+$ python expense_tracker.py summary
+Summary (all time)
+------------------------------
+rent                 1200.00
+food                  650.00
+travel                 90.00
+------------------------------
+TOTAL                1940.00
+
+$ python expense_tracker.py summary --month 2026-11
+Summary for 2026-11
+------------------------------
+rent                 1200.00
+food                  250.00
+travel                 90.00
+------------------------------
+TOTAL                1540.00
+
+$ git add expense_tracker.py
+
+$ git commit -m Add category and monthly summary report
+[feature/summary 12479ba] Add category and monthly summary report
+ 1 file changed, 30 insertions(+)
+
+$ git checkout main
+Switched to branch 'main'
+
+$ git merge --no-ff feature/summary -m Merge branch 'feature/summary'
+Merge made by the 'ort' strategy.
+ expense_tracker.py | 30 ++++++++++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
+
+$ git checkout -b feature/budget-alert
+Switched to a new branch 'feature/budget-alert'
+
+$ python expense_tracker.py budget --set 1800
+Monthly budget set to 1800.00.
+
+$ python expense_tracker.py budget --month 2026-11
+Budget for 2026-11: 1800.00
+Spent: 1540.00   Remaining: 260.00
+ALERT: you have used 86% of your monthly budget.
+
+$ python expense_tracker.py add 50 food --date 2026-11-22 --note Snacks
+Added 50.00 to 'food' on 2026-11-22.
+
+$ python expense_tracker.py budget --month 2026-11
+Budget for 2026-11: 1800.00
+Spent: 1590.00   Remaining: 210.00
+ALERT: you have used 88% of your monthly budget.
+
+$ python -m unittest -v
+test_add_valid_expense (test_expense_tracker.ExpenseTrackerTests.test_add_valid_expense) ... ok
+test_category_totals_and_month_filter (test_expense_tracker.ExpenseTrackerTests.test_category_totals_and_month_filter) ... ok
+test_no_alert_below_threshold (test_expense_tracker.ExpenseTrackerTests.test_no_alert_below_threshold) ... ok
+test_no_alert_without_budget (test_expense_tracker.ExpenseTrackerTests.test_no_alert_without_budget) ... ok
+test_over_budget_alert (test_expense_tracker.ExpenseTrackerTests.test_over_budget_alert) ... ok
+test_rejects_invalid_amounts (test_expense_tracker.ExpenseTrackerTests.test_rejects_invalid_amounts) ... ok
+test_rejects_invalid_date (test_expense_tracker.ExpenseTrackerTests.test_rejects_invalid_date) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.009s
+
+OK
+
+$ git add expense_tracker.py test_expense_tracker.py .gitignore
+
+$ git commit -m Add monthly budget with alert at 80% threshold, plus unit tests
+[feature/budget-alert f1f57b3] Add monthly budget with alert at 80% threshold, plus unit tests
+ 3 files changed, 98 insertions(+)
+ create mode 100644 test_expense_tracker.py
+
+$ git checkout main
+Switched to branch 'main'
+
+$ git merge --no-ff feature/budget-alert -m Merge branch 'feature/budget-alert'
+Merge made by the 'ort' strategy.
+ .gitignore              |  1 +
+ expense_tracker.py      | 54 +++++++++++++++++++++++++++++++++++++++++++++++++
+ test_expense_tracker.py | 43 +++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 98 insertions(+)
+ create mode 100644 test_expense_tracker.py
+
+$ git log --oneline --graph
+*   976fcff Merge branch 'feature/budget-alert'
+|\  
+| * f1f57b3 Add monthly budget with alert at 80% threshold, plus unit tests
+|/  
+*   ae15fb8 Merge branch 'feature/summary'
+|\  
+| * 12479ba Add category and monthly summary report
+|/  
+*   2a38ea3 Merge branch 'feature/add-list'
+|\  
+| * 121ae67 Add and list expenses with input validation
+|/  
+* 7e26c69 Initial commit: project README and .gitignore
+

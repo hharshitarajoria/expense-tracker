@@ -1,0 +1,185 @@
+$ git checkout -b feature/early-warning
+Switched to a new branch 'feature/early-warning'
+
+$ git diff
+diff --git a/expense_tracker.py b/expense_tracker.py
+index 2f5e465..c1c0b07 100644
+--- a/expense_tracker.py
++++ b/expense_tracker.py
+@@ -9,7 +9,7 @@ DATA_FILE = "expenses.json"
+ BUDGET_FILE = "budget.json"
+ 
+ # Share of the monthly budget at which the user is alerted.
+-ALERT_THRESHOLD = 0.80
++ALERT_THRESHOLD = 0.75
+ 
+ 
+ def load_expenses(path=DATA_FILE):
+@@ -108,7 +108,7 @@ def budget_alert(spent, budget):
+     if ratio >= 1:
+         return f"OVER BUDGET: spent {spent:.2f} of {budget:.2f} ({ratio:.0%})."
+     if ratio >= ALERT_THRESHOLD:
+-        return f"ALERT: you have used {ratio:.0%} of your monthly budget."
++        return f"WARNING: you have used {ratio:.0%} of your budget. Consider slowing down."
+     return None
+ 
+ 
+
+$ git commit -am Warn earlier: lower alert threshold to 75%
+[feature/early-warning a7d257d] Warn earlier: lower alert threshold to 75%
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+$ git checkout main
+Switched to branch 'main'
+
+$ git checkout -b feature/critical-alert
+Switched to a new branch 'feature/critical-alert'
+
+$ git diff
+diff --git a/expense_tracker.py b/expense_tracker.py
+index 2f5e465..d01dc51 100644
+--- a/expense_tracker.py
++++ b/expense_tracker.py
+@@ -9,7 +9,7 @@ DATA_FILE = "expenses.json"
+ BUDGET_FILE = "budget.json"
+ 
+ # Share of the monthly budget at which the user is alerted.
+-ALERT_THRESHOLD = 0.80
++ALERT_THRESHOLD = 0.90
+ 
+ 
+ def load_expenses(path=DATA_FILE):
+@@ -108,7 +108,7 @@ def budget_alert(spent, budget):
+     if ratio >= 1:
+         return f"OVER BUDGET: spent {spent:.2f} of {budget:.2f} ({ratio:.0%})."
+     if ratio >= ALERT_THRESHOLD:
+-        return f"ALERT: you have used {ratio:.0%} of your monthly budget."
++        return f"CRITICAL: you have used {ratio:.0%} of your budget. Only {budget - spent:.2f} left."
+     return None
+ 
+ 
+
+$ git commit -am Alert only when spending is critical: raise threshold to 90%
+[feature/critical-alert e219128] Alert only when spending is critical: raise threshold to 90%
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+$ git checkout main
+Switched to branch 'main'
+
+$ git merge --no-ff feature/early-warning -m Merge branch 'feature/early-warning'
+Merge made by the 'ort' strategy.
+ expense_tracker.py | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+$ git merge feature/critical-alert
+Auto-merging expense_tracker.py
+CONFLICT (content): Merge conflict in expense_tracker.py
+Automatic merge failed; fix conflicts and then commit the result.
+
+$ git status
+On branch main
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+  (use "git merge --abort" to abort the merge)
+
+Unmerged paths:
+  (use "git add <file>..." to mark resolution)
+	both modified:   expense_tracker.py
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+$ git diff
+diff --cc expense_tracker.py
+index c1c0b07,d01dc51..0000000
+--- a/expense_tracker.py
++++ b/expense_tracker.py
+@@@ -9,7 -9,7 +9,11 @@@ DATA_FILE = "expenses.json
+  BUDGET_FILE = "budget.json"
+  
+  # Share of the monthly budget at which the user is alerted.
+++<<<<<<< HEAD
+ +ALERT_THRESHOLD = 0.75
+++=======
++ ALERT_THRESHOLD = 0.90
+++>>>>>>> feature/critical-alert
+  
+  
+  def load_expenses(path=DATA_FILE):
+@@@ -108,7 -108,7 +112,11 @@@ def budget_alert(spent, budget)
+      if ratio >= 1:
+          return f"OVER BUDGET: spent {spent:.2f} of {budget:.2f} ({ratio:.0%})."
+      if ratio >= ALERT_THRESHOLD:
+++<<<<<<< HEAD
+ +        return f"WARNING: you have used {ratio:.0%} of your budget. Consider slowing down."
+++=======
++         return f"CRITICAL: you have used {ratio:.0%} of your budget. Only {budget - spent:.2f} left."
+++>>>>>>> feature/critical-alert
+      return None
+  
+  
+
+===== RESOLUTION =====
+
+$ grep -c <<<<<<< expense_tracker.py
+0
+
+$ python -m unittest -v
+test_add_valid_expense (test_expense_tracker.ExpenseTrackerTests.test_add_valid_expense) ... ok
+test_category_totals_and_month_filter (test_expense_tracker.ExpenseTrackerTests.test_category_totals_and_month_filter) ... ok
+test_critical_level_at_90_percent (test_expense_tracker.ExpenseTrackerTests.test_critical_level_at_90_percent) ... ok
+test_no_alert_below_threshold (test_expense_tracker.ExpenseTrackerTests.test_no_alert_below_threshold) ... ok
+test_no_alert_without_budget (test_expense_tracker.ExpenseTrackerTests.test_no_alert_without_budget) ... ok
+test_over_budget_alert (test_expense_tracker.ExpenseTrackerTests.test_over_budget_alert) ... ok
+test_rejects_invalid_amounts (test_expense_tracker.ExpenseTrackerTests.test_rejects_invalid_amounts) ... ok
+test_rejects_invalid_date (test_expense_tracker.ExpenseTrackerTests.test_rejects_invalid_date) ... ok
+test_warning_level_at_75_percent (test_expense_tracker.ExpenseTrackerTests.test_warning_level_at_75_percent) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.010s
+
+OK
+
+$ python expense_tracker.py budget --month 2026-11
+Budget for 2026-11: 1800.00
+Spent: 1590.00   Remaining: 210.00
+WARNING: you have used 88% of your budget. Consider slowing down.
+
+$ git add expense_tracker.py test_expense_tracker.py
+
+$ git status
+On branch main
+All conflicts fixed but you are still merging.
+  (use "git commit" to conclude merge)
+
+Changes to be committed:
+	modified:   expense_tracker.py
+	modified:   test_expense_tracker.py
+
+
+$ git commit -m Merge branch 'feature/critical-alert': keep both alert levels -m Resolved conflict on ALERT_THRESHOLD by splitting it into WARNING_THRESHOLD (0.75) and CRITICAL_THRESHOLD (0.90), so both features are kept. Added tests for each level.
+[main 9a7219a] Merge branch 'feature/critical-alert': keep both alert levels
+
+$ git log --oneline --graph --all
+*   9a7219a Merge branch 'feature/critical-alert': keep both alert levels
+|\  
+| * e219128 Alert only when spending is critical: raise threshold to 90%
+* |   684ef03 Merge branch 'feature/early-warning'
+|\ \  
+| |/  
+|/|   
+| * a7d257d Warn earlier: lower alert threshold to 75%
+|/  
+*   976fcff Merge branch 'feature/budget-alert'
+|\  
+| * f1f57b3 Add monthly budget with alert at 80% threshold, plus unit tests
+|/  
+*   ae15fb8 Merge branch 'feature/summary'
+|\  
+| * 12479ba Add category and monthly summary report
+|/  
+*   2a38ea3 Merge branch 'feature/add-list'
+|\  
+| * 121ae67 Add and list expenses with input validation
+|/  
+* 7e26c69 Initial commit: project README and .gitignore
+

@@ -1,0 +1,14 @@
+$ git init -b main
+Initialized empty Git repository in expense-tracker/.git/
+
+$ git add README.md .gitignore
+
+$ git commit -m Initial commit: project README and .gitignore
+[main (root-commit) 7e26c69] Initial commit: project README and .gitignore
+ 2 files changed, 25 insertions(+)
+ create mode 100644 .gitignore
+ create mode 100644 README.md
+
+$ git log --oneline
+7e26c69 Initial commit: project README and .gitignore
+
